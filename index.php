@@ -1,15 +1,25 @@
 <?php 
-    $tasks = [];
-    if (isset($_POST["submit"])) {
-        $task = $_POST["task"];
-
-        $taskss = array_push($tasks, $task);
-
-        print_r($taskss);
+    if (!file_exists('text.txt')) {
+        file_put_contents('text.txt', '');
     }
-    
 
+    $texts = file('text.txt', FILE_IGNORE_NEW_LINES / FILE_SKIP_EMPTY_LINES);
 
+    // added task 
+    if (isset($_POST["submit"])) {
+        $task = trim($_POST["task"]);
+        if (!empty($task)) {
+            file_put_contents('text.txt', $task . PHP_EOL, FILE_APPEND);
+            $texts = file('text.txt', FILE_IGNORE_NEW_LINES / FILE_SKIP_EMPTY_LINES);
+        }
+    } 
+
+    if (isset($_POST['delete'])) {
+        $texts = file('text.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $numr = $_POST['delete'];
+        unset($texts[$numr]);
+        file_put_contents('text.txt', implode("\n", $texts));
+    }
 ?>
 
 <!DOCTYPE html>
@@ -51,14 +61,16 @@
             </form>
         </div>
         <ul>
+            <?php foreach ($texts as $index => $task) { ?>
             <li class="flex items-center justify-between mb-2 border-b-2 border-gray-200 py-2 todo-item">
-                <span class="text-lg">Task 1</span>
-                <div>
-                    <button class="text-sm text-gray-600 hover:text-red-600 focus:outline-none focus:text-red-600">
+                <span class="text-lg"><?php echo $task ?></span>
+                <form action="<?php echo $_SERVER['PHP_SELF']; ?> " method="post">
+                    <button type="submit" class="text-sm text-gray-600 hover:text-red-600 focus:outline-none focus:text-red-600" name="delete" value="<?php echo $index ?>">
                         Delete
                     </button>
-                </div>
+                </form>
             </li>
+            <?php  } ?>
         </ul>
     </div>
 </body>
